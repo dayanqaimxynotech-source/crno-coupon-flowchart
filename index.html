@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CRNO coupon detailed flow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+<style>
+:root{--fg:#1f2a37;--btn:#eef2f7;--btnb:#c9d2de;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--fg:#e6ebf2;--btn:#1d2735;--btnb:#34445a}}
+:root[data-theme="dark"]{--fg:#e6ebf2;--btn:#1d2735;--btnb:#34445a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:transparent;color:var(--fg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);display:flex;gap:8px;justify-content:flex-end;padding:10px 16px;z-index:5}
+.bar button{font:inherit;font-size:13px;color:var(--fg);background:var(--btn);border:1px solid var(--btnb);border-radius:8px;padding:6px 12px;cursor:pointer}
+#wrap{overflow:auto;padding:8px 24px 40px}
+#chart{display:inline-block;transform-origin:0 0}
+#chart svg{max-width:none!important;height:auto}
+</style>
+</head>
+<body>
+<div class="bar"><button id="out">Zoom out</button><button id="fit">Fit width</button><button id="in">Zoom in</button></div>
+<div id="wrap"><div id="chart" role="img" aria-label="Detailed CRNO coupon flowchart covering setup, actions, member redemption, Android and iOS payment, and payment result"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+var scale=1,wrap=document.getElementById('wrap'),chart=document.getElementById('chart');
+function pal(){
+  var dark=document.documentElement.dataset.theme?document.documentElement.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  return dark?{node:'#1f3a5c',nodeS:'#4f86c6',nodeT:'#dcebfa',dec:'#2a2347',decS:'#8a7bd6',decT:'#e6e1fa',err:'#4a2226',errS:'#e0626a',errT:'#fbdadc',ok:'#16402f',okS:'#4cc38a',okT:'#d5f5e6',cl:'#ffffff0d',clS:'#4a586b',pill:'#05090f',pillT:'#f2f5f9',pillB:'#34445a',txt:'#e6ebf2',line:'#8c98aa'}
+  :{node:'#e3effc',nodeS:'#3b78c0',nodeT:'#12365f',dec:'#ece8fb',decS:'#6a58c4',decT:'#2d2266',err:'#fde8ea',errS:'#c8414b',errT:'#6b1820',ok:'#dff5ea',okS:'#2f9e6b',okT:'#0d4a30',cl:'#00000008',clS:'#b7c2d1',pill:'#111827',pillT:'#ffffff',pillB:'#111827',txt:'#1f2a37',line:'#6b7788'};
+}
+var SRC=[
+'flowchart TB',
+'Start((Start))',
+'subgraph S1["1. Super Admin – Coupon setup"]',
+'A1[Super Admin opens CRNO Portal] --> A2[Coupon Codes, then Create Coupon] --> A3[Enter Coupon Name and unique Coupon Code] --> A4[Choose Discount Type: percentage or fixed amount in £] --> A5[Enter Discount Value] --> A6[Select Applicable Memberships] --> A7(Membership billing cycle?)',
+'A7 -- Monthly --> A8[Set number of billing cycles, e.g. 2 or 3 months] --> A10',
+'A7 -- Yearly --> A9[Discount covers one yearly payment] --> A10[Set optional Start Date, End Date and Maximum Usage]',
+'A10 --> A11[Set Status: Active / Inactive] --> A12[Save coupon] --> A13(Is platform iOS?)',
+'A13 -- Yes --> A14[Create offer in Apple App Store Connect] --> A15[Copy Apple Offer ID] --> A16[Open coupon Actions and select Apple Offer ID] --> A17[Enter Apple Offer ID and save] --> A18[Coupon ready for redemption]',
+'A13 -- "No / Android" --> A18',
+'A18 --> A19[Share coupon code with members separately]',
+'end',
+'subgraph S2["2. Super Admin – Coupon actions"]',
+'C1[Open coupon Actions three-dot menu] --> C2(Choose action)',
+'C2 -- Edit --> C3[Update coupon configuration and details]',
+'C2 -- "View Details" --> C4[View configuration, discount, duration and memberships]',
+'C2 -- "View Redemptions" --> C5[View number of redemptions]',
+'C2 -- "Apple Offer ID" --> C6[Add or update Apple Offer ID]',
+'C2 -- Deactivate --> C7[Coupon disabled, members can no longer redeem] --> C8[Coupon kept for history, never deleted]',
+'end',
+'subgraph S3["3. Member – Coupon redemption"]',
+'M1[Member opens Membership section] --> M2[Tap Have a coupon code?] --> M3[Enter coupon code and tap Apply Code] --> M4[App validates code against CRNO] --> M5(Code valid?)',
+'M5 -- No --> M6X[Incorrect, inactive, expired or already redeemed] --> M6[Display: Code couldn\'t be applied] --> M7[Keep all membership prices original]',
+'M5 -- Yes --> M8[Display: Code Recognised] --> M9[Member taps Continue] --> M10[CRNO claims coupon against member account] --> M11[Display: Coupon Code Applied] --> M12[Eligible memberships show discounted price] --> M13(Percentage discount?)',
+'M13 -- Yes --> M14[Show percentage-off badge] --> M15',
+'M13 -- No --> M15(Member next step?)',
+'M15 -- "View Membership Details" --> M16[See coupon code, discount amount and duration] --> M17',
+'M15 -- Continue --> M17[Return to Membership and select a plan]',
+'M17 --> M18(Remove coupon before payment?)',
+'M18 -- Yes --> M19[Coupon claim removed] --> M20[All prices revert to original] --> M21[Proceed to payment]',
+'M18 -- No --> M21',
+'end',
+'subgraph S4["4. Payment – Android and iOS"]',
+'P1(Select Platform)',
+'P1 -- Android --> D1[Select eligible membership plan] --> D2(Already has selected membership?)',
+'D2 -- Yes --> D3[Display Apply Offer button] --> D4[Discount applies to next payment, current period unchanged] --> D8[Process subscription with Stripe]',
+'D2 -- No --> D6[Subscribe to selected plan] --> D7[Stripe applies discount, coupon code is the offer code] --> D8',
+'P1 -- iOS --> I1[Select eligible membership plan] --> I2(Already has selected membership?)',
+'I2 -- Yes --> I3[Display Apply Offer button] --> I4(Apple Offer ID configured?)',
+'I2 -- No --> I3b[Subscribe to selected plan] --> I4',
+'I4 -- No --> I5[Regular price, offer cannot be applied] --> I13',
+'I4 -- Yes --> I6[App requests signed Apple offer from CRNO] --> I7[CRNO signs offer and returns it to app] --> I8[App passes signed offer to App Store purchase] --> I9(Apple validates offer?)',
+'I9 -- Yes --> I10[Apple applies discount] --> I11[Discount reflected in subscription] --> I13[Process Apple purchase]',
+'I9 -- "No / cancelled" --> I12[Purchase not discounted] --> I13',
+'end',
+'subgraph S5["5. Payment result and coupon redemption"]',
+'R1(Payment successful?)',
+'R1 -- No --> R2[Payment failed or cancelled] --> R3[Coupon not redeemed] --> R3b[Claim kept for retry or removal]',
+'R1 -- Yes --> R4[Subscription saved] --> R5[CRNO redeems coupon claim]',
+'R6(Purchase successful?)',
+'R6 -- No --> R7[Purchase failed or cancelled] --> R3',
+'R6 -- Yes --> R8[Subscription saved] --> R5',
+'R5 --> R9[Update usage records, once per member] --> R10(Membership billing cycle?)',
+'R10 -- Monthly --> R11[Discount applies for configured billing cycles] --> R13',
+'R10 -- Yearly --> R12[Discount applies to one yearly payment] --> R13[Display successful membership] --> End((End))',
+'end',
+'Start --> A1',
+'A19 --> M1',
+'A18 -.-> C1',
+'M21 --> P1',
+'D8 --> R1',
+'I13 --> R6'
+].join('\n');
+function build(){
+  var c=pal();
+  var src=SRC+'\n'
+   +'classDef default fill:'+c.node+',stroke:'+c.nodeS+',color:'+c.nodeT+',stroke-width:1px\n'
+   +'classDef d fill:'+c.dec+',stroke:'+c.decS+',color:'+c.decT+',stroke-width:1.5px\n'
+   +'classDef e fill:'+c.err+',stroke:'+c.errS+',color:'+c.errT+',stroke-width:1.5px\n'
+   +'classDef o fill:'+c.ok+',stroke:'+c.okS+',color:'+c.okT+',stroke-width:1.5px\n'
+   +'class A7,A13,C2,M5,M13,M15,M18,P1,D2,I2,I4,I9,R1,R6,R10 d\n'
+   +'class M6,I5,I12,R2,R7,C7 e\nclass Start,End o\n'
+   +['S1','S2','S3','S4','S5'].map(function(s){return 'style '+s+' fill:'+c.cl+',stroke:'+c.clS}).join('\n')+'\n'
+   +'linkStyle default stroke:'+c.line+',stroke-width:1.3px\n';
+  mermaid.initialize({startOnLoad:false,theme:'base',securityLevel:'loose',
+    themeCSS:'.edgeLabel,.labelBkg,.edgeLabel rect{background:transparent!important;background-color:transparent!important;fill:transparent!important;opacity:1!important}.edgeLabel p,.edgeLabel span{margin:0;padding:3px 11px;border-radius:999px;background-color:'+c.pill+'!important;border:1px solid '+c.pillB+';color:'+c.pillT+'!important;font-weight:500;white-space:nowrap}.edgeLabel foreignObject{overflow:visible}',
+    flowchart:{curve:'basis',nodeSpacing:44,rankSpacing:52,padding:16,useMaxWidth:false,htmlLabels:true},
+    themeVariables:{fontFamily:'Inter, system-ui, sans-serif',fontSize:'14px',background:'transparent',lineColor:c.line,textColor:c.txt,clusterBkg:c.cl,clusterBorder:c.clS,titleColor:c.txt}});
+  mermaid.render('flow'+Date.now(),src).then(function(r){
+    chart.innerHTML=r.svg;
+    var s=chart.querySelector('svg');s.style.background='transparent';
+    s.querySelectorAll('.cluster rect').forEach(function(x){x.setAttribute('rx','14')});
+    s.querySelectorAll('.node rect').forEach(function(x){x.setAttribute('rx','9');x.setAttribute('ry','9')});
+    fit();
+  }).catch(function(){chart.textContent='Could not render the flowchart.'});
+}
+function apply(){chart.style.transform='scale('+scale+')'}
+function fit(){var s=chart.querySelector('svg');if(!s)return;var w=s.getBoundingClientRect().width/scale;scale=Math.min(1,(wrap.clientWidth-48)/w);apply()}
+document.getElementById('in').onclick=function(){scale=Math.min(2,scale*1.2);apply()};
+document.getElementById('out').onclick=function(){scale=Math.max(.2,scale/1.2);apply()};
+document.getElementById('fit').onclick=fit;
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',build);
+build();
+</script>
+</body>
+</html>
